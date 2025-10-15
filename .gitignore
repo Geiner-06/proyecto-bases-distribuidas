@@ -1,0 +1,16 @@
+# Carpetas de datos locales (no se deben subir al repo)
+pg_data/
+mssql_data/
+mongo_data/
+postgres_data/
+sqlserver_data/
+mongo_data/
+
+# Archivos temporales
+*.log
+*.tmp
+*.bak
+*.DS_Store
+
+# Archivos de entorno
+.env

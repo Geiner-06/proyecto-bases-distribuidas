@@ -1,0 +1,49 @@
+# Definición de los servicios (contenedores) que vamos a levantar.
+services:
+  # 1. Servicio para PostgreSQL - El núcleo transaccional
+  db_postgres:
+    image: postgres:15-alpine
+    container_name: postgres_server
+    environment:
+      POSTGRES_DB: sistema_medico_db
+      POSTGRES_USER: admin_pg
+      POSTGRES_PASSWORD: '12345'
+    ports:
+      # CAMBIO IMPORTANTE: Usaremos el puerto 5433 para evitar conflictos.
+      - "5433:5432"
+    volumes:
+      # Solo dejamos el volumen de datos por ahora.
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 2. Servicio para Microsoft SQL Server - El puente de integración
+  db_sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_server
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: '12345'
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    restart: unless-stopped
+
+  # 3. Servicio para MongoDB - La capa analítica
+  db_mongo:
+    image: mongo:6.0
+    container_name: mongo_server
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin_mongo
+      MONGO_INITDB_ROOT_PASSWORD: '12345'
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+# Definición de los volúmenes nombrados para la persistencia de datos.
+volumes:
+  pg_data:
+  mssql_data:
+  mongo_data:
