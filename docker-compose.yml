@@ -2,7 +2,7 @@
 services:
   # 1. Servicio para PostgreSQL - El núcleo transaccional
   db_postgres:
-    image: postgres:15-alpine
+    image: chumaky/datero_engine:17.6
     container_name: postgres_server
     environment:
       POSTGRES_DB: sistema_medico_db
