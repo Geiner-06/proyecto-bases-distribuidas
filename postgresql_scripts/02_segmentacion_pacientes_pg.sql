@@ -2,7 +2,6 @@
 -- SEGMENTACIÓN HORIZONTAL DE PACIENTES POR PROVINCIA
 -- Sistema de Gestión de Estudios Médicos Distribuido
 -- Núcleo Transaccional - PostgreSQL
--- Autor: Geiner Barrantes
 -- Fecha: 15/10/2025
 -- ============================================================
 

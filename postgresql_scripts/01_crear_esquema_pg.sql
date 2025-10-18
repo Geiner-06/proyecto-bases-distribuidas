@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS sucursales (
 -- ============================================================
 -- (3) TABLA: Pacientes
 -- ============================================================
-CREATE TABLE IF NOT EXISTS pacientes (
+
+CREATE TABLE pacientes (
     id_paciente SERIAL,
     cedula VARCHAR(25) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
@@ -37,10 +38,14 @@ CREATE TABLE IF NOT EXISTS pacientes (
     email VARCHAR(100),
     id_sucursal_fk INTEGER NOT NULL,
 
-    -- Clave primaria compuesta (necesario para partición)
-    PRIMARY KEY (id_paciente, id_sucursal_fk)
-)
-PARTITION BY LIST (id_sucursal_fk);
+    -- PRIMARY KEY incluye la columna de partición
+    PRIMARY KEY (id_paciente, id_sucursal_fk),
+
+    -- Constraints únicas también incluyen la columna de partición
+    CONSTRAINT uq_pacientes_cedula_sucursal UNIQUE (cedula, id_sucursal_fk),
+    CONSTRAINT uq_pacientes_email_sucursal UNIQUE (email, id_sucursal_fk)
+) PARTITION BY LIST (id_sucursal_fk);
+
 
 -- ============================================================
 -- (4) TABLA: Médicos
@@ -90,8 +95,8 @@ CREATE TABLE IF NOT EXISTS citas (
     id_paciente_fk INTEGER NOT NULL,
     id_medico_fk INTEGER NOT NULL,
     id_sucursal_fk INTEGER NOT NULL,
-    CONSTRAINT fk_cita_paciente FOREIGN KEY (id_paciente_fk)
-        REFERENCES pacientes (id_paciente)
+    CONSTRAINT fk_cita_paciente FOREIGN KEY (id_paciente_fk, id_sucursal_fk)
+    REFERENCES pacientes (id_paciente, id_sucursal_fk)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT fk_cita_medico FOREIGN KEY (id_medico_fk)
