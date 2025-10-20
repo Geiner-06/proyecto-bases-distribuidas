@@ -1,28 +1,22 @@
 // ============================================================
-// 1. CREAR LA BASE DE DATOS
+// 1. Cambiar o crear la base de datos
 // ============================================================
-
-// Nos cambiamos a la base de datos 'analitica_medica_db'
-// Si no existe, MongoDB la crea al insertar documentos.
 use analitica_medica_db;
 
 // ============================================================
-// 2. CREAR LA COLECCIÓN
+// 2. Crear la colección 'reportes_estudios'
 // ============================================================
-
-// Creamos la colección 'reportes_estudios'
 db.createCollection("reportes_estudios");
 
 // ============================================================
-// 3. CREAR EL USUARIO CON PERMISOS
+// 3. Crear el usuario con permisos de lectura y escritura
 // ============================================================
-
 db.createUser({
     user: "usr_fdw_pg_mongo",
     pwd: "PasswordParaMongo_789!",
     roles: [
         {
-            role: "readWrite",     // Permisos para leer y escribir
+            role: "readWrite",
             db: "analitica_medica_db"
         }
     ]

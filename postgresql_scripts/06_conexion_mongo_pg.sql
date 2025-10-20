@@ -36,6 +36,7 @@ CREATE USER MAPPING FOR admin_pg -- El usuario que está ejecutando el UPDATE
 -- (3) CREAR LA TABLA FORÁNEA
 -- ============================================================
 -- Representa la colección 'reportes_estudios' de MongoDB
+
 CREATE FOREIGN TABLE IF NOT EXISTS integracion.reportes_estudios_fdw (
     _id NAME,                       -- ID de MongoDB
     id_estudio_ordenado_pg INTEGER,
@@ -63,7 +64,7 @@ GRANT INSERT ON integracion.reportes_estudios_fdw TO admin_pg;
 -- ============================================================
 -- (5) FUNCIÓN PARA EXPORTAR ESTUDIOS A MONGO
 -- ============================================================
-CREATE OR REPLACE FUNCTION integracion.fn_exportar_estudio_a_mongo()
+CREATE OR REPLACE FUNCTION integracion.fn_exportar_estudio_a_mongo() 
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.estado_estudio = 'Resultado listo' THEN
@@ -74,26 +75,33 @@ BEGIN
             paciente,
             medico_solicitante,
             estudio,
-            resultado_analitico
+            resultado_analitico,
+            facturacion
         )
         SELECT
             NEW.id_estudio_ordenado,
             NEW.fecha_resultado,
-            (jsonb_build_object('id_sucursal_pg', s.id_sucursal, 'nombre', s.nombre))::text,
-            (jsonb_build_object('id_paciente_pg', p.id_paciente, 'nombre_completo', p.nombre || ' ' || p.apellido1))::text,
-            (jsonb_build_object(
+            jsonb_build_object('id_sucursal_pg', s.id_sucursal, 'nombre', s.nombre),
+            jsonb_build_object('id_paciente_pg', p.id_paciente, 'nombre_completo', p.nombre || ' ' || p.apellido1),
+            jsonb_build_object(
                 'id_medico_pg', m.id_medico,
                 'nombre_completo', m.nombre || ' ' || m.apellido1,
-                'especialidad', COALESCE(m.especialidad,'')
-            ))::text,
-            (jsonb_build_object('codigo', te.codigo_estudio, 'nombre', te.nombre_estudio))::text,
-            (jsonb_build_object('diagnostico', COALESCE(NEW.resultado, '')))::text
+                'especialidad', COALESCE(m.especialidad, '')
+            ),
+            jsonb_build_object('codigo', te.codigo_estudio, 'nombre', te.nombre_estudio),
+            jsonb_build_object('diagnostico', COALESCE(NEW.resultado, '')),
+            jsonb_build_object(
+                'monto', COALESCE(fe.monto, 0),
+                'estado', COALESCE(fe.estado_facturacion, 'Pendiente'),
+                'fecha_actualizacion', COALESCE(fe.fecha_actualizacion_estado, now())
+            )
         FROM core_medico.ordenes_medicas om
         JOIN core_medico.citas c ON om.id_cita_fk = c.id_cita
         JOIN core_medico.pacientes p ON c.id_paciente_fk = p.id_paciente
         JOIN core_medico.medicos m ON om.id_medico_solicitante_fk = m.id_medico
         JOIN core_medico.sucursales s ON c.id_sucursal_fk = s.id_sucursal
         JOIN core_medico.tipos_estudio te ON NEW.id_tipo_estudio_fk = te.id_tipo_estudio
+        LEFT JOIN integracion.facturacion_externa_fdw fe ON NEW.id_estudio_ordenado = fe.id_estudio_ordenado_pg
         WHERE om.id_orden = NEW.id_orden_fk;
     END IF;
     RETURN NEW;
