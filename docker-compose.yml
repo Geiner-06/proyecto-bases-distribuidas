@@ -18,13 +18,13 @@ services:
 
   # 2. Servicio para Microsoft SQL Server - El puente de integración
   db_sqlserver:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver_server
     environment:
       ACCEPT_EULA: 'Y'
       MSSQL_SA_PASSWORD: 'ComplexPass2025!'
     ports:
-      - "14333:1433"
+      - "1433:1433"
     volumes:
       - mssql_data:/var/opt/mssql
     restart: unless-stopped
